@@ -1,5 +1,6 @@
-import javax.swing.*;
+//import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.*;
+import javax.swing.*;
 
 public class PasswordTesterApp extends JFrame
 {
@@ -39,7 +40,8 @@ public class PasswordTesterApp extends JFrame
         buttonTestPassword.addActionListener(e -> {
             String password = textFieldPassword.getText();
             // Test the password
-            boolean isSecure = PasswordChecker.isPasswordSecure(password, labelFeedback);; 
+            PasswordChecker PasswordChecker = new PasswordChecker();
+            boolean isSecure = PasswordChecker.isPasswordSecure(password, labelFeedback); 
             // Provide feedback to the user
             if (isSecure)
             {
