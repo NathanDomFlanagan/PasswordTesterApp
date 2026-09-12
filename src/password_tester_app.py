@@ -308,10 +308,15 @@ class PasswordTesterApp(ctk.CTk):
         result = check_password(password)
         if result:
             self.label_feedback.configure(text=f"✗ {result}", text_color="#E03E3E")
+        else:
+            self.label_feedback.configure(text="✓ Meets password requirements", text_color="#00C864")
+
+        # Breach status is checked independently of the complexity rules above,
+        # so a passphrase that ignores those rules still gets a real answer.
+        if not password:
             self.label_hibp.configure(text=" ")
             return
 
-        self.label_feedback.configure(text="✓ Password is secure!", text_color="#00C864")
         self.label_hibp.configure(text="⏳ Checking breach database...", text_color="gray")
         self.button_test.configure(state="disabled")
 
@@ -322,19 +327,19 @@ class PasswordTesterApp(ctk.CTk):
         try:
             pwned, count = check_hibp(password)
             if pwned:
-                msg = f"⚠ Found in {count:,} data breach(es). Avoid using this password."
-                color = "#E08C00"
+                hibp_msg = f"⚠ Found in {count:,} data breach(es). Avoid using this password."
+                hibp_color = "#E08C00"
             else:
-                msg = "✓ Not found in any known data breaches."
-                color = "#00C864"
+                hibp_msg = "✓ Not found in any known data breaches."
+                hibp_color = "#00C864"
         except Exception:
-            msg = "⚠ Could not reach breach database. Check your connection."
-            color = "gray"
+            hibp_msg = "⚠ Could not reach breach database. Check your connection."
+            hibp_color = "gray"
 
-        self.after(0, self._update_hibp_label, msg, color)
+        self.after(0, self._update_hibp_label, hibp_msg, hibp_color)
 
-    def _update_hibp_label(self, msg: str, color: str):
-        self.label_hibp.configure(text=msg, text_color=color)
+    def _update_hibp_label(self, hibp_msg: str, hibp_color: str):
+        self.label_hibp.configure(text=hibp_msg, text_color=hibp_color)
         self.button_test.configure(state="normal")
 
     def _show_tips(self):

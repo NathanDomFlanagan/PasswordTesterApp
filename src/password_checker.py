@@ -4,6 +4,22 @@ import requests
 from password_strength import PasswordStrength
 
 
+def _has_repeated_run(password: str, run_length: int = 4) -> bool:
+    """True if the same character repeats run_length or more times in a row."""
+    return bool(re.search(r'(.)\1{' + str(run_length - 1) + r',}', password))
+
+
+def _has_sequential_run(password: str, run_length: int = 4) -> bool:
+    """True if the password contains an ascending/descending run (e.g. 'abcd', '4321')."""
+    lowered = password.lower()
+    for i in range(len(lowered) - run_length + 1):
+        codes = [ord(c) for c in lowered[i:i + run_length]]
+        steps = [b - a for a, b in zip(codes, codes[1:])]
+        if all(step == 1 for step in steps) or all(step == -1 for step in steps):
+            return True
+    return False
+
+
 def check_password(password: str) -> str | None:
     if len(password) < 8:
         return "Password is too short. It should be at least 8 characters long."
@@ -47,11 +63,14 @@ def get_strength(password: str) -> PasswordStrength:
     if len(password) >= 8:  score += 1
     if len(password) >= 12: score += 1
     if len(password) >= 16: score += 1
-    
+
     if re.search(r'[A-Z]', password):        score += 1
     if re.search(r'[a-z]', password):        score += 1
     if re.search(r'\d', password):           score += 1
     if re.search(r'[!@#$%^&*()]', password): score += 1
+
+    if _has_repeated_run(password) or _has_sequential_run(password):
+        score -= 2
 
     if score <= 2: return PasswordStrength.WEAK
     if score <= 4: return PasswordStrength.FAIR
